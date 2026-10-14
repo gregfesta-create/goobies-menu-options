@@ -10,15 +10,36 @@ local growOnHover=(Ini.read(text or '').Settings or {}).GrowOnHover~='false'
 local hoverGlow=(Ini.read(text or '').Settings or {}).HoverGlow=='true'
 local opacity=tonumber((Ini.read(text or '').Settings or {}).MainMenuTextOpacity) or 50
 if opacity~=opacity or opacity<10 or opacity>100 or opacity%10~=0 then opacity=50 end
-local colors={'#FFFFFF','#AEB4BE','#EF5350','#FF9800','#FFEB3B','#66BB6A','#42A5F5','#AB47BC'}
+local colors={'#FFFFFF','#AEB4BE','#FF0000','#FF9800','#FFEB3B','#66BB6A','#42A5F5','#AB47BC'}
 local color=(Ini.read(text or '').Settings or {}).MainMenuTextColor or '#FFFFFF'
 if not color:match('^#%x%x%x%x%x%x$') then color='#FFFFFF'; ctx.log('Invalid MainMenuTextColor; using white') end
+if color:upper()=='#EF5350' then
+    color='#FF0000'
+    local nextText=Ini.set(text or '[Settings]\n','Settings','MainMenuTextColor',color)
+    local called,saved,why=pcall(ctx.writeConfig,nextText)
+    if called and saved then text=nextText else ctx.log('Red preset migration could not be saved: '..tostring(called and why or saved):sub(1,200)) end
+end
 local originals={}
 local measuredMenu,hoverFactor,secondarySize,playSize,rowHeight
 local settings=Ini.read(text or '').Settings or {}
 local legacy=tonumber(settings.MainMenuFontScale) or 50
 local fontPercent=tonumber(settings.MainMenuFontSize) or (legacy<=50 and 30*legacy/50 or 30+30*(legacy-50)/50)
 fontPercent=math.max(30,math.min(60,5*math.floor(fontPercent/5+.5)))
+if type(ctx.registerGameMenuStyle)=='function' then
+    local ok,why=pcall(function()
+        local source=debug.getinfo(1,'S').source
+        local folder=ctx.packagePath and (ctx.packagePath..'/Package') or source:match('^@(.*)[/\\][^/\\]*$')
+        assert(folder,'Menu Options package path unavailable')
+        local Esc=assert(loadfile(folder..'/esc_style.lua','t',_ENV))()
+        local esc=Esc.new(_G,{log=ctx.log,settings=function()
+            local state=ctx.query(ctx.id)
+            return {enabled=state.enabled and state.active,color=color,fontSize=fontPercent,
+                opacity=opacity,grow=growOnHover,glow=hoverGlow}
+        end})
+        ctx.registerGameMenuStyle(function() esc:Tick() end,function() esc:Cleanup() end)
+    end)
+    if not ok then ctx.log('Esc button styling unavailable: '..tostring(why)) end
+end
 assert(type(ctx.registerMainMenuStyle)=='function','Main menu style API unavailable')
 ctx.registerMainMenuStyle(function(menu,entry)
     local function checked(stage,fn)
@@ -99,6 +120,9 @@ ctx.registerMainMenuStyle(function(menu,entry)
         end
         local isPlay=button:GetFullName()==menu.Play:GetFullName()
         local isEntry=entry and button:GetFullName()==entry:GetFullName()
+        local sharedStyle=type(ctx.mainMenuButtonStyle)=='function' and ctx.mainMenuButtonStyle(button) or nil
+        local baseFontSize=sharedStyle and sharedStyle.baseFontSize or ((isPlay or isEntry) and playSize or secondarySize)
+        if sharedStyle and label.Font.Size~=baseFontSize then return end -- Blueprint Construct still pending.
         if isEntry and rowHeight and rowHeight>0 then
             local frame=button:GetParent()
             if not saved.entryScaleBox then
@@ -132,7 +156,7 @@ ctx.registerMainMenuStyle(function(menu,entry)
             end
         end
         local normalSize=fontPercent
-        local normalFactor=desired and normalSize/((isPlay or isEntry) and playSize or secondarySize) or 1
+        local normalFactor=desired and normalSize/baseFontSize or 1
         -- Reserve the native Play row height once. Never resize a hovered row
         -- or subtract padding: native ScaleBoxes own their internal allocation.
         if not isEntry and not saved.rowSlot and rowHeight and rowHeight>0 then
@@ -159,7 +183,7 @@ ctx.registerMainMenuStyle(function(menu,entry)
                 Bottom=p.Bottom+extra})
             saved.reserved=reserve
         end
-        local factor=desired and ((hovered and growOnHover and playSize or normalSize)/((isPlay or isEntry) and playSize or secondarySize)) or 1
+        local factor=desired and ((hovered and growOnHover and playSize or normalSize)/baseFontSize) or 1
         if saved.scaleApplied~=factor then
             label:SetRenderTransformPivot(desired and {X=0,Y=.5} or saved.pivot)
             label:SetRenderScale({X=saved.scale.X*factor,Y=saved.scale.Y*factor})
@@ -178,7 +202,7 @@ ctx.registerMainMenuStyle(function(menu,entry)
                 -- the font outline. Never call the unsupported live SetFont.
                 local font=halo.Font; local source=label.Font
                 font.FontObject=source.FontObject; font.TypefaceFontName=source.TypefaceFontName
-                local baseSize=(isPlay or isEntry) and playSize or secondarySize
+                local baseSize=baseFontSize
                 -- Match the original font without modifying its text storage.
                 local ratio=1
                 local outlineFactor=factor/ratio
@@ -274,6 +298,13 @@ end)
 if value and value~='true' and value~='false' then
     ctx.log('Invalid EscapeClosesModMenu; using default true')
 end
+local function escapeAllowed()
+    local state=ctx.query(ctx.id)
+    return enabled and state.enabled==true and state.active==true
+end
+if type(ctx.registerEscapePreference)=='function' then
+    ctx.registerEscapePreference(escapeAllowed)
+else
 assert(Key and Key.ESCAPE and type(RegisterKeyBind)=='function','Escape key API unavailable')
 RegisterKeyBind(Key.ESCAPE,function()
     ctx.log('Escape trace: callback entered')
@@ -284,6 +315,7 @@ RegisterKeyBind(Key.ESCAPE,function()
         ctx.log('Escape trace: back request queued')
     end
 end)
+end
 ctx.registerSettings({
     build=function(ui,panel)
         ui.boolean(panel,'(ESC) closes Mod Menu',enabled,function(nextValue)
@@ -300,7 +332,7 @@ ctx.registerSettings({
             local ok,problem=ctx.writeConfig(Ini.set(current or '[Settings]\n','Settings','GrowOnHover',tostring(nextValue)))
             if not ok then return nil,problem end
             growOnHover=nextValue; ctx.invalidate(); return true
-        end,nil,'Main-menu buttons grow to the original Play text size while hovered. Changes apply immediately.')
+        end,nil,'Main-menu and Esc buttons grow while hovered. Changes apply immediately.')
         ui.boolean(panel,'Highlight hovered button',hoverGlow,function(nextValue)
             if type(nextValue)~='boolean' then return nil,'Expected boolean' end
             local current,why=ctx.readConfig(); if why and why~='missing' then return nil,why end

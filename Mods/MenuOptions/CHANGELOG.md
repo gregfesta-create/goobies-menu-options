@@ -1,5 +1,17 @@
 # Menu Options changelog
 
+> Workspace priority: The current mission is to finish, test and package Goobies_MP. This document governs this supporting mod only; dated approval gates and task handoffs do not override the current workspace authorization in ../CLAUDE.md or queue in ../TODO.md. Change this mod when needed for integration, a concrete regression, or an explicit user request.
+
+## 1.1.0-test.1 — 2026-10-14
+
+Test build (the `-test` in the version marks it), published from its own repository (goobies-menu-options) like Mod Menu
+and Goobies Multiplayer. It requires Mod Menu; install both, in any order.
+
+- The Esc (pause) menu buttons get the same Menu Options styling as the main menu.
+- The Esc styling leaves hidden labels alone, so the game's hidden placeholder text no longer shows up in the
+  multiplayer Esc menu ("BINGOS").
+- The zip is now `goobies_menu_options_<version>.zip` (it extracts into `Shooter\Binaries\Win64` as before).
+
 ## 1.0.1 — 2026-10-10
 
 - Changed the settings label from “Escape closes Mod Menu” to “(ESC) closes Mod Menu”. Existing saved settings continue to use the same configuration key.
@@ -7,4 +19,4 @@
 
 ## 1.0.0 — 2026-10-10
 
-Initial mod.
+Initial mod.

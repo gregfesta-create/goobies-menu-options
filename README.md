@@ -1,33 +1,43 @@
-# Goobies Menu Options
+# Menu Options for Goobies
 
-Optional main-menu presentation settings for **Goobies**: button text color, opacity, grow on hover, and a hover highlight. Requires **Goobies Mod Menu**.
+Optional styling for the game's menus: button text color, opacity, grow on hover and a hover highlight, on the main menu
+and the Esc (pause) menu. **Version 1.1.0-test.1 is a test build.**
 
-**Version:** 1.0.1 (see `Mods/MenuOptions/CHANGELOG.md`).
+## Requirements
+
+- Goobies on Steam (Windows).
+- **Requires Mod Menu 1.1.0-test.2 or newer**: [download it here](https://github.com/gregfesta-create/goobies-mod-menu/releases/tag/v1.1.0-test.2); install both, in any order.
+  Every Goobies mod needs Mod Menu; it also brings the UE4SS mod loader.
 
 ## Install
-1. Install [Goobies Mod Menu](https://github.com/gregfesta-create/goobies-mod-menu) first.
-2. Copy everything in this repository into the game's `Shooter/Binaries/Win64` folder, keeping the folder structure.
-3. Start the game, open **Mods**, and adjust Menu Options there.
 
-Details: `Mods/MenuOptions/INSTALL.txt`.
+1. Find the game folder: in Steam, right-click Goobies, *Manage > Browse local files*. Open `Shooter\Binaries\Win64`
+   (the folder with `Shooter-Win64-Shipping.exe`); below this is called `Win64`.
+2. If Windows marks a downloaded zip as blocked: right-click it, *Properties*, tick **Unblock**.
+3. Put `goobies_menu_options_1.1.0-test.1.zip` and the Mod Menu zip into `Win64` and extract each there (*right-click > Extract All*, target `Win64`
+   itself). The zips share no files, so install both, in any order.
+4. Start Goobies through Steam, open *Mods* and change Menu Options there (the gear next to it).
 
-## Reporting a crash
+## Known limits
 
-**Double-click `Report a problem.bat` in your Mod Menu folder.** Every Goobies mod needs Mod Menu, so the report tool comes with it: it is in your Goobies folder under `Shooter\Binaries\Win64\Mods\mod_menu\` (in Steam: right-click Goobies > **Manage** > **Browse local files**; if you see `Goobies_DX11` or `Goobies_Vulkan`, open the one you play).
+- The Esc (pause) menu styling is new in this test build. If a pause-menu button looks wrong, or text shows up that should not be there, please report it.
 
-1. Double-click `Report a problem.bat`. It works without a window, so give it a few seconds. It reports on the game copy it sits in, saves `Goobies_crash_report_<date>.zip` in your **Downloads** folder, opens the crash-report page in your browser and tells you in a small popup where the zip is. If Windows warns about the file, choose **More info > Run anyway**.
-2. Fill in the [Crash report issue](https://github.com/gregfesta-create/goobies-menu-options/issues/new?template=crash_report.yml) form on that page and drag the zip into it.
+## Reporting a problem
 
-Older Mod Menu without the tool? Download [`Report a problem.bat`](https://raw.githubusercontent.com/gregfesta-create/goobies-mod-menu/main/Tools/Report%20a%20problem.bat) and [`CollectCrashReport.ps1`](https://raw.githubusercontent.com/gregfesta-create/goobies-mod-menu/main/Tools/CollectCrashReport.ps1) into the **same folder** (right-click each link > **Save link as**). From outside the game folder it finds the game through Steam (the DX11 or Vulkan copy you played last).
+`Report a problem.bat` ships inside the Mod Menu mod folder, `Win64\Mods\mod_menu`, because every Goobies mod needs
+Mod Menu. From the Mod Menu README:
 
-Nothing is uploaded automatically. Only developer test builds that include a private `report_webhook.txt` next to the .bat can send the report straight to the developers: a popup asks first, and only **Yes** sends it. A sent report is deleted from your PC afterwards; a report that is not sent stays in your Downloads folder.
+**Easiest way: double-click `Report a problem.bat` in your Mod Menu folder.**
 
-From a console: `powershell -NoProfile -ExecutionPolicy Bypass -File .\CollectCrashReport.ps1 -GameDir "<Goobies folder>" [-NoDump]`. If it fails, it leaves `Goobies_crash_report_FAILED.txt` in your Downloads folder with the reason and the retry steps, and opens it.
+Every Goobies mod needs Mod Menu, so the report tool comes with it. It is in your Goobies folder under `Shooter\Binaries\Win64\Mods\mod_menu\` (in Steam: right-click Goobies > **Manage** > **Browse local files**; if you see `Goobies_DX11` or `Goobies_Vulkan`, open the one you play).
 
-Included: UE4SS logs, `UE4SS-settings.ini`, `Configs/ModList.ini`, `Mods/mods.txt`, each mod's `mod_menu.ini`, the list of mod folders, the newest crash's `CrashContext.runtime-xml` and `CrashReportClient.ini`, a `summary.txt`, and the newest crash dump (`.dmp`) if it is 20 MB or less.
+1. Double-click `Report a problem.bat`. It works without a window, so give it a few seconds: it reports on the game copy it sits in, saves `Goobies_crash_report_<date>.zip` in your Downloads folder, opens the crash-report page in your browser and tells you in a small popup where the zip is. If Windows warns about the file, choose **More info > Run anyway**.
+2. Fill in the form on that page and drag the zip into it.
 
-Removed from text files: your user name and profile folder, computer name, Steam and lobby IDs, IP and e-mail addresses, network host names, and the account/machine fields in the crash context. `summary.txt` warns if the newest crash looks older or newer than your last session, or came from a different Goobies copy; mention that in the issue.
+## Uninstall
 
-**The `.dmp` file cannot be cleaned:** it is a snapshot of the game's memory and may contain personal information. To leave it out, run the script with `-NoDump`.
+Delete `Win64\Mods\MenuOptions`. Mod Menu stays for your other mods. Your save is not changed.
 
-If the tool cannot run, zip these by hand (open them first and remove anything personal): `Shooter/Binaries/Win64/UE4SS.log`, `Shooter/Binaries/Win64/Mods/mods.txt`, `Shooter/Binaries/Win64/Configs/ModList.ini`, and the newest folder in `%LOCALAPPDATA%\Shooter\Saved\Crashes\`.
+## License
+
+See `LICENSE`.
